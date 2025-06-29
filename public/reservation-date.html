@@ -185,7 +185,7 @@
 <body>
     <div class="rental-wrapper">
         <div class="rental-container">
-            <img src="hd.jpg" alt="흥덕청소년 문화의집 건물" class="main-building-img">
+            <img src="hd.JPG" alt="흥덕청소년 문화의집 건물" class="main-building-img">
             <header class="rental-header">
                 <h1 id="facilityTitle">시설 이용 신청</h1>
                 <p class="rental-subtitle">예약 날짜와 시간을 선택하세요</p>
@@ -258,20 +258,29 @@
             return [];
         }
         
-        // facility + detail 조합으로 검색
-        const key = facility + '||' + (detail || '-');
-        console.log(`생성된 키: "${key}"`);
+        // 여러 키 패턴으로 검색 시도
+        const possibleKeys = [
+            facility + '||' + (detail || '-'),
+            facility + '||' + detail,
+            detail + '||' + facility,
+            detail
+        ];
         
-        if (reservationData[key]) {
-            console.log(`키 "${key}"의 데이터:`, reservationData[key]);
-            if (reservationData[key][date]) {
-                console.log(`날짜 "${date}"의 예약 시간:`, reservationData[key][date]);
-                return reservationData[key][date];
+        console.log('검색할 키들:', possibleKeys);
+        
+        for (const key of possibleKeys) {
+            console.log(`키 "${key}" 확인 중...`);
+            if (reservationData[key]) {
+                console.log(`키 "${key}"의 데이터:`, reservationData[key]);
+                if (reservationData[key][date]) {
+                    console.log(`날짜 "${date}"의 예약 시간:`, reservationData[key][date]);
+                    return reservationData[key][date];
+                } else {
+                    console.log(`날짜 "${date}"에 대한 데이터 없음`);
+                }
             } else {
-                console.log(`날짜 "${date}"에 대한 데이터 없음`);
+                console.log(`키 "${key}"에 대한 데이터 없음`);
             }
-        } else {
-            console.log(`키 "${key}"에 대한 데이터 없음`);
         }
         
         console.log('예약된 시간 없음');
@@ -454,6 +463,8 @@
                 selectedDate = e.target.getAttribute('data-date');
                 selectedTime = null;
                 
+                console.log('날짜 선택됨:', selectedDate); // 디버깅 추가
+                
                 // 예약 데이터 확인 후 시간 선택 UI 표시
                 checkReservationsAndShowTimeSelect();
             }
@@ -465,17 +476,22 @@
 
     function showTimeSelect() {
         const block = document.getElementById('timeSelectBlock');
+        console.log('=== showTimeSelect 함수 호출 ==='); // 디버깅 추가
+        console.log('timeSelectBlock 요소:', block); // 디버깅 추가
+        console.log('selectedDate:', selectedDate); // 디버깅 추가
+        
+        // 무조건 시간 선택 UI를 보이게 함
         block.style.display = 'block';
         
         console.log('시간 선택 UI 표시:', selectedDate); // 디버깅
         
-        // 예약 데이터가 로드되지 않았다면 다시 로드
+        // 예약 데이터가 로드되지 않았다면 빈 배열로 처리
         if (Object.keys(reservationData).length === 0) {
-            loadReservationData().then(() => {
-                showTimeSelect();
-            });
-            return;
+            console.log('예약 데이터가 비어있어서 빈 배열로 처리합니다.'); // 디버깅 추가
+            reservationData = {}; // 빈 객체로 초기화
         }
+        
+        console.log('시간 선택 UI HTML 생성 시작'); // 디버깅 추가
         
         block.innerHTML = `
             <div style="margin-bottom: 20px; text-align: center;">
@@ -489,6 +505,8 @@
                 ${getTimeBtnsHTML()}
             </div>
         `;
+        
+        console.log('시간 선택 UI HTML 생성 완료'); // 디버깅 추가
         
         // 오전/오후 탭 이벤트
         block.querySelectorAll('.ampm-tab').forEach(tab => {
@@ -509,6 +527,8 @@
                 }
             }
         });
+        
+        console.log('시간 선택 UI 이벤트 등록 완료'); // 디버깅 추가
     }
 
     async function loadReservationData() {
@@ -525,23 +545,28 @@
             reservations.forEach((reservation, index) => {
                 console.log(`예약 ${index + 1} 처리:`, reservation);
                 
-                // facility에 일반 시설명, detail에 세부선택이 들어가는 구조
-                // 따라서 facility + detail 조합으로 검색
-                const key = reservation.facility + '||' + (reservation.detail || '-');
-                console.log(`  → 생성된 키: "${key}"`);
+                // 여러 키 패턴으로 저장
+                const keys = [
+                    reservation.facility + '||' + (reservation.detail || '-'),
+                    reservation.facility + '||' + reservation.detail,
+                    reservation.detail || reservation.facility
+                ];
                 
-                if (!reservationData[key]) {
-                    reservationData[key] = {};
-                    console.log(`  → 새 키 생성: "${key}"`);
-                }
-                if (!reservationData[key][reservation.date]) {
-                    reservationData[key][reservation.date] = [];
-                    console.log(`  → 새 날짜 추가: "${reservation.date}"`);
-                }
-                reservationData[key][reservation.date].push(reservation.start_time);
-                console.log(`  → 시간 추가: "${reservation.start_time}"`);
+                keys.forEach(key => {
+                    console.log(`  → 키 "${key}"에 저장`);
+                    if (!reservationData[key]) {
+                        reservationData[key] = {};
+                        console.log(`  → 새 키 생성: "${key}"`);
+                    }
+                    if (!reservationData[key][reservation.date]) {
+                        reservationData[key][reservation.date] = [];
+                        console.log(`  → 새 날짜 추가: "${reservation.date}"`);
+                    }
+                    reservationData[key][reservation.date].push(reservation.start_time);
+                    console.log(`  → 시간 추가: "${reservation.start_time}"`);
+                });
                 
-                console.log(`예약 처리 완료: facility="${reservation.facility}", detail="${reservation.detail}", key="${key}", date="${reservation.date}", time="${reservation.start_time}"`);
+                console.log(`예약 처리 완료: facility="${reservation.facility}", detail="${reservation.detail}", date="${reservation.date}", time="${reservation.start_time}"`);
             });
             
             console.log('최종 정리된 예약 데이터:', reservationData);
@@ -555,18 +580,16 @@
     function getTimeBtnsHTML() {
         const slots = selectedAMPM==='AM' ? amSlots : pmSlots;
         
-        // 세부선택된 시설명 사용 (댄스연습실은 예외)
-        const finalFacility = facilityName === '댄스연습실' ? facilityName : selectedFacility;
-        
-        // 정확한 예약 시간 가져오기
-        const reserved = getReservedTimes(facilityName, selectedFacility, selectedDate);
+        // 예약 데이터가 없으면 빈 배열로 처리
+        const reserved = Object.keys(reservationData).length > 0 ? 
+            getReservedTimes(facilityName, selectedFacility, selectedDate) : [];
         
         console.log('=== 시간 버튼 생성 디버깅 ===');
         console.log('facilityName:', facilityName);
         console.log('selectedFacility:', selectedFacility);
-        console.log('finalFacility:', finalFacility);
         console.log('selectedDate:', selectedDate);
         console.log('예약된 시간:', reserved);
+        console.log('예약 데이터 존재 여부:', Object.keys(reservationData).length > 0);
         
         // 오늘 날짜인지 확인 (로컬 시간대 사용)
         const todayStr = formatDateToYYYYMMDD(today);
@@ -733,10 +756,16 @@
 
     // 예약 데이터 확인 후 시간 선택 UI 표시
     async function checkReservationsAndShowTimeSelect() {
-        // 예약 데이터가 없으면 다시 로드
+        console.log('=== checkReservationsAndShowTimeSelect 함수 호출 ==='); // 디버깅 추가
+        console.log('selectedDate:', selectedDate); // 디버깅 추가
+        console.log('현재 예약 데이터 키 개수:', Object.keys(reservationData).length); // 디버깅 추가
+        
+        // 예약 데이터가 없어도 시간 선택 UI를 표시
         if (Object.keys(reservationData).length === 0) {
-            await loadReservationData();
+            console.log('예약 데이터가 없어도 시간 선택 UI를 표시합니다.'); // 디버깅 추가
         }
+        
+        console.log('showTimeSelect 함수 호출'); // 디버깅 추가
         showTimeSelect();
     }
 
