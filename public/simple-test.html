@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비활성화 테스트</title>
+    <style>
+        .time-btn { 
+            min-width: 90px; 
+            padding: 12px 0; 
+            border-radius: 16px; 
+            border: none; 
+            font-size: 1.08rem; 
+            font-weight: 600; 
+            background: #e0e7ef; 
+            color: #3498db; 
+            cursor: pointer; 
+            transition: background 0.18s, color 0.18s; 
+        }
+        .time-btn.disabled { 
+            background: #cccccc !important; 
+            color: #888888 !important; 
+            cursor: not-allowed !important; 
+            text-decoration: line-through !important;
+            opacity: 0.5 !important;
+            pointer-events: none !important;
+            border: 2px solid #999999 !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>비활성화 테스트</h1>
+    <div id="buttons"></div>
+    
+    <script>
+        function createButtons() {
+            const times = ['09:00', '10:00', '11:00', '12:00'];
+            const reserved = ['11:00']; // 11:00이 예약됨
+            
+            let html = '';
+            times.forEach(time => {
+                const isReserved = reserved.includes(time);
+                const disabledText = isReserved ? ' (예약됨)' : '';
+                
+                let buttonClass = 'time-btn';
+                if (isReserved) buttonClass += ' disabled';
+                
+                let buttonHtml = `<button class="${buttonClass}"`;
+                if (isReserved) buttonHtml += ' disabled';
+                buttonHtml += `>${time}${disabledText}</button>`;
+                
+                html += buttonHtml;
+            });
+            
+            document.getElementById('buttons').innerHTML = html;
+        }
+        
+        createButtons();
+    </script>
+</body>
+</html> 

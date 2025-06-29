@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예약 데이터 테스트</title>
+</head>
+<body>
+    <h1>예약 데이터 테스트</h1>
+    <button onclick="testReservation()">테스트 실행</button>
+    <div id="result"></div>
+    
+    <script>
+        async function testReservation() {
+            try {
+                const response = await fetch('/api/reservations');
+                const reservations = await response.json();
+                
+                let result = '<h2>원본 데이터:</h2>';
+                result += '<pre>' + JSON.stringify(reservations, null, 2) + '</pre>';
+                
+                // 예약 데이터 정리
+                const reservationData = {};
+                reservations.forEach(reservation => {
+                    const key = reservation.facility + '||' + (reservation.detail || '-');
+                    if (!reservationData[key]) reservationData[key] = {};
+                    if (!reservationData[key][reservation.date]) reservationData[key][reservation.date] = [];
+                    reservationData[key][reservation.date].push(reservation.start_time);
+                });
+                
+                result += '<h2>정리된 데이터:</h2>';
+                result += '<pre>' + JSON.stringify(reservationData, null, 2) + '</pre>';
+                
+                // 보드게임1 테스트
+                const testKey = '보드게임||보드게임1';
+                const testDate = '2025-07-15';
+                const testReserved = (reservationData[testKey] && reservationData[testKey][testDate]) ? reservationData[testKey][testDate] : [];
+                
+                result += '<h2>보드게임1 테스트:</h2>';
+                result += '<p>Key: ' + testKey + '</p>';
+                result += '<p>Date: ' + testDate + '</p>';
+                result += '<p>Reserved: ' + JSON.stringify(testReserved) + '</p>';
+                result += '<p>11:00 포함: ' + testReserved.includes('11:00') + '</p>';
+                
+                // 노래방1 테스트
+                const testKey2 = '노래방||노래방1';
+                const testDate2 = '2025-06-30';
+                const testReserved2 = (reservationData[testKey2] && reservationData[testKey2][testDate2]) ? reservationData[testKey2][testDate2] : [];
+                
+                result += '<h2>노래방1 테스트:</h2>';
+                result += '<p>Key: ' + testKey2 + '</p>';
+                result += '<p>Date: ' + testDate2 + '</p>';
+                result += '<p>Reserved: ' + JSON.stringify(testReserved2) + '</p>';
+                result += '<p>11:00 포함: ' + testReserved2.includes('11:00') + '</p>';
+                result += '<p>12:00 포함: ' + testReserved2.includes('12:00') + '</p>';
+                
+                document.getElementById('result').innerHTML = result;
+                
+            } catch (error) {
+                console.error('테스트 오류:', error);
+                document.getElementById('result').innerHTML = '<p>오류: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html> 

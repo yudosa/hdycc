@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이용시설 선택 - 흥덕청소년 문화의집</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="rental-wrapper">
+        <div class="rental-container">
+            <img src="hd.jpg" alt="흥덕청소년 문화의집 건물" class="main-building-img">
+            <header class="rental-header">
+                <h1>시설 이용 신청</h1>
+                <p class="rental-subtitle">이용하실 공간을 선택하세요</p>
+            </header>
+            <main class="rental-main">
+                <div class="facility-floor-row">
+                    <div class="facility-floor-card">
+                        <div class="facility-floor-label">1F</div>
+                        <div class="facility-card-row facility-card-row-single">
+                            <div class="facility-card facility-card-dance" onclick="window.location.href='reservation-date.html'">
+                                <div class="facility-emoji">💃</div>
+                                <div class="facility-name">댄스연습실</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="facility-floor-card">
+                        <div class="facility-floor-label">3F</div>
+                        <div class="facility-card-row facility-card-row-multi">
+                            <div class="facility-card facility-card-nintendo" onclick="window.location.href='reservation-date.html'">
+                                <div class="facility-emoji">🎮</div>
+                                <div class="facility-name">닌텐도</div>
+                            </div>
+                            <div class="facility-card facility-card-ps" onclick="window.location.href='reservation-date.html'">
+                                <div class="facility-emoji">🕹️</div>
+                                <div class="facility-name">플레이스테이션</div>
+                            </div>
+                        </div>
+                        <div class="facility-card-row facility-card-row-multi">
+                            <div class="facility-card facility-card-karaoke" onclick="window.location.href='reservation-date.html'">
+                                <div class="facility-emoji">🎤</div>
+                                <div class="facility-name">노래방</div>
+                            </div>
+                            <div class="facility-card facility-card-board" onclick="window.location.href='reservation-date.html'">
+                                <div class="facility-emoji">🎲</div>
+                                <div class="facility-name">보드게임</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions-centered">
+                    <button class="btn-secondary-centered facility-back-btn" onclick="history.back()" style="color:#222;">◀ 이전</button>
+                    <button class="btn-secondary-centered facility-home-btn" onclick="window.location.href='index.html'" style="color:#222;">↻ 처음으로</button>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+    // 시설 카드 클릭 시 시설명 저장
+    document.querySelectorAll('.facility-card').forEach(card => {
+        card.addEventListener('click', function() {
+            let name = card.querySelector('.facility-name').textContent.trim();
+            localStorage.setItem('reservationFacility', name);
+        });
+    });
+
+    function showModal(message) {
+        let modal = document.createElement('div');
+        modal.className = 'custom-modal-bg';
+        modal.innerHTML = `
+            <div class="custom-modal">
+                <div class="custom-modal-content">${message}</div>
+                <button class="custom-modal-btn">확인</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.querySelector('.custom-modal-btn').onclick = () => modal.remove();
+    }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예약 날짜와 시간 선택 - 흥덕청소년 문화의집</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .time-select-block { margin-top: 28px; }
+        .ampm-tabs { display: flex; gap: 12px; margin-bottom: 18px; }
+        .ampm-tab { flex: 1; padding: 10px 0; border-radius: 16px; border: none; font-weight: 700; font-size: 1.08rem; background: #f5f5f5; color: #3498db; cursor: pointer; transition: background 0.18s, color 0.18s; }
+        .ampm-tab.active { background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%); color: #222; }
+        .time-btn-group { display: flex; flex-wrap: wrap; gap: 12px; }
+        .time-btn { 
+            min-width: 90px; 
+            padding: 12px 0; 
+            border-radius: 16px; 
+            border: none; 
+            font-size: 1.08rem; 
+            font-weight: 600; 
+            background: #e0e7ef; 
+            color: #3498db; 
+            cursor: pointer; 
+            transition: background 0.18s, color 0.18s; 
+        }
+        .time-btn.selected { 
+            background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%); 
+            color: #222; 
+        }
+        .time-btn.disabled { 
+            background: #cccccc !important; 
+            color: #888888 !important; 
+            cursor: not-allowed !important; 
+            text-decoration: line-through !important;
+            opacity: 0.5 !important;
+            pointer-events: none !important;
+            border: 2px solid #999999 !important;
+        }
+        .reservation-calendar-block {
+            background: #fafbfc;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(52, 152, 219, 0.08);
+            padding: 32px 24px 24px 24px;
+            margin: 32px 0 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 18px;
+        }
+        .calendar-title {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #222;
+            letter-spacing: 1px;
+        }
+        .calendar-nav-btn {
+            background: linear-gradient(90deg, #ffd6e3 0%, #a8edea 100%);
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 1.5rem;
+            color: #ff6f61;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(255, 182, 193, 0.10);
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s, transform 0.18s;
+        }
+        .calendar-nav-btn:hover {
+            background: linear-gradient(90deg, #a8edea 0%, #ffd6e3 100%);
+            color: #d84315;
+            transform: scale(1.08);
+        }
+        .reservation-calendar {
+            width: 100%;
+            max-width: 420px;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+        }
+        .reservation-calendar th {
+            font-size: 1.12rem;
+            color: #3498db;
+            font-weight: 700;
+            padding-bottom: 8px;
+        }
+        .reservation-calendar td {
+            text-align: center;
+            padding: 0;
+        }
+        .calendar-day {
+            width: 48px;
+            height: 48px;
+            line-height: 48px;
+            font-size: 1.18rem;
+            font-weight: 600;
+            border-radius: 50%;
+            background: #fff;
+            color: #222;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+            box-shadow: 0 1px 4px rgba(52, 152, 219, 0.06);
+            border: 2px solid transparent;
+        }
+        .calendar-day.sunday {
+            color: #e74c3c !important;
+        }
+        .calendar-day.saturday {
+            color: #3498db !important;
+        }
+        .calendar-day.selected {
+            background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%);
+            color: #fff !important;
+            border: 2px solid #3498db;
+            box-shadow: 0 4px 16px rgba(52, 152, 219, 0.13);
+        }
+        .calendar-day.disabled {
+            background: #f0f0f0;
+            color: #bbb !important;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+        .calendar-day:not(.selected):hover:not(.disabled) {
+            background: #e0f7fa;
+            color: #3498db;
+            border: 2px solid #a8edea;
+        }
+        .reservation-detail-select {
+            margin-bottom: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .detail-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 16px rgba(52, 152, 219, 0.10);
+            padding: 32px 24px 24px 24px;
+            margin-bottom: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 540px;
+            width: 100%;
+        }
+        .detail-label {
+            font-size: 1.18rem;
+            font-weight: 800;
+            color: #3498db;
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+        }
+        .detail-select {
+            width: 100%;
+            max-width: 420px;
+            padding: 16px 20px;
+            border: 2px solid #e0e7ef;
+            border-radius: 16px;
+            font-size: 1.12rem;
+            font-weight: 600;
+            color: #3498db;
+            background: #fff;
+            cursor: pointer;
+            transition: border-color 0.18s, box-shadow 0.18s;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233498db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 20px;
+            padding-right: 48px;
+        }
+        .detail-select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="rental-wrapper">
+        <div class="rental-container">
+            <img src="hd.jpg" alt="흥덕청소년 문화의집 건물" class="main-building-img">
+            <header class="rental-header">
+                <h1 id="facilityTitle">시설 이용 신청</h1>
+                <p class="rental-subtitle">예약 날짜와 시간을 선택하세요</p>
+            </header>
+            <main class="rental-main">
+                <div class="rental-form-centered reservation-date-form">
+                    <div class="detail-card">
+                        <div class="detail-label">세부선택</div>
+                        <select class="detail-select" id="detailSelect">
+                            <option value="닌텐도1">🎮 닌텐도1</option>
+                            <option value="닌텐도2">🎮 닌텐도2</option>
+                            <option value="닌텐도3">🎮 닌텐도3</option>
+                            <option value="닌텐도4">🎮 닌텐도4</option>
+                            <option value="닌텐도5">🎮 닌텐도5</option>
+                            <option value="닌텐도6">🎮 닌텐도6</option>
+                            <option value="닌텐도7">🎮 닌텐도7</option>
+                            <option value="닌텐도8">🎮 닌텐도8</option>
+                            <option value="닌텐도9">🎮 닌텐도9</option>
+                        </select>
+                    </div>
+                    <div class="reservation-calendar-block">
+                        <div class="calendar-header">
+                            <button class="calendar-nav-btn" id="prevMonth">◀</button>
+                            <span class="calendar-title" id="calendarTitle"></span>
+                            <button class="calendar-nav-btn" id="nextMonth">▶</button>
+                        </div>
+                        <table class="reservation-calendar">
+                            <thead>
+                                <tr>
+                                    <th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th>
+                                </tr>
+                            </thead>
+                            <tbody id="calendarBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="time-select-block" id="timeSelectBlock" style="display:none;"></div>
+                    <div class="form-actions-centered">
+                        <button class="btn-secondary-centered" style="color:#222;">◀ 이전</button>
+                        <button class="btn-secondary-centered" style="color:#222;">다음 ▶</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        const timeSlots = [
+        '09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'
+    ];
+    const amSlots = timeSlots.slice(0, 4); // 09~12
+    const pmSlots = timeSlots.slice(4);   // 13~19
+
+    let selectedFacility = '닌텐도1';
+    let selectedDate = null;
+    let selectedTime = null;
+    let selectedAMPM = 'AM';
+    
+    // 예약 데이터 (API에서 가져옴)
+    let reservationData = {};
+
+    // 예약 데이터를 정확히 매칭하는 함수
+    function getReservedTimes(facility, detail, date) {
+        console.log('=== getReservedTimes 함수 호출 ===');
+        console.log('입력 매개변수:', { facility, detail, date });
+        console.log('전역 reservationData:', reservationData);
+        console.log('reservationData 키들:', Object.keys(reservationData));
+        
+        if (!reservationData || Object.keys(reservationData).length === 0) {
+            console.log('예약 데이터가 비어있음');
+            return [];
+        }
+        
+        // facility + detail 조합으로 검색
+        const key = facility + '||' + (detail || '-');
+        console.log(`생성된 키: "${key}"`);
+        
+        if (reservationData[key]) {
+            console.log(`키 "${key}"의 데이터:`, reservationData[key]);
+            if (reservationData[key][date]) {
+                console.log(`날짜 "${date}"의 예약 시간:`, reservationData[key][date]);
+                return reservationData[key][date];
+            } else {
+                console.log(`날짜 "${date}"에 대한 데이터 없음`);
+            }
+        } else {
+            console.log(`키 "${key}"에 대한 데이터 없음`);
+        }
+        
+        console.log('예약된 시간 없음');
+        return [];
+    }
+
+    // 시설명에 따라 세부선택 옵션 동적 생성
+    const facilityName = localStorage.getItem('reservationFacility') || '';
+    const detailCard = document.querySelector('.detail-card');
+    const detailLabel = document.querySelector('.detail-label');
+    const detailSelect = document.getElementById('detailSelect');
+
+    function setDetailOptions() {
+        // 제목 동적 변경
+        const facilityTitle = document.getElementById('facilityTitle');
+        if (facilityName) {
+            facilityTitle.innerHTML = `<span style="color: #3498db;">${facilityName}</span> 시설 이용 신청`;
+        }
+        
+        if (facilityName === '댄스연습실') {
+            detailCard.style.display = 'none';
+            selectedFacility = facilityName; // 댄스연습실은 세부선택 없음
+        } else {
+            detailCard.style.display = '';
+            let options = '';
+            if (facilityName === '닌텐도') {
+                options = [
+                    {v:'닌텐도1', t:'🎮 닌텐도1'},
+                    {v:'닌텐도2', t:'🎮 닌텐도2'},
+                    {v:'닌텐도3', t:'🎮 닌텐도3'},
+                    {v:'닌텐도4', t:'🎮 닌텐도4'},
+                    {v:'닌텐도5', t:'🎮 닌텐도5'},
+                    {v:'닌텐도6', t:'🎮 닌텐도6'},
+                    {v:'닌텐도7', t:'🎮 닌텐도7'},
+                    {v:'닌텐도8', t:'🎮 닌텐도8'},
+                    {v:'닌텐도9', t:'🎮 닌텐도9 ♿'}
+                ];
+            } else if (facilityName === '플레이스테이션') {
+                options = [
+                    {v:'플레이스테이션1', t:'🕹️ 플레이스테이션1'},
+                    {v:'플레이스테이션2', t:'🕹️ 플레이스테이션2'}
+                ];
+            } else if (facilityName === '노래방') {
+                options = [
+                    {v:'노래방1', t:'🎤 노래방1'},
+                    {v:'노래방2', t:'🎤 노래방2'}
+                ];
+            } else if (facilityName === '보드게임') {
+                options = [
+                    {v:'보드게임1', t:'🎲 보드게임1'},
+                    {v:'보드게임2', t:'🎲 보드게임2'}
+                ];
+            }
+            detailSelect.innerHTML = options.map(o => `<option value="${o.v}">${o.t}</option>`).join('');
+            
+            // selectedFacility를 현재 시설의 첫 번째 옵션으로 설정
+            if (options.length > 0) {
+                selectedFacility = options[0].v;
+                console.log('selectedFacility 업데이트:', selectedFacility);
+            }
+        }
+    }
+    setDetailOptions();
+
+    // 세부선택 버튼 클릭
+    document.getElementById('detailSelect').addEventListener('change', function() {
+        selectedFacility = this.value;
+        console.log('선택된 세부선택:', selectedFacility); // 디버깅
+        // 시간 선택 영역 초기화
+        selectedDate = null;
+        selectedTime = null;
+        document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
+        document.getElementById('timeSelectBlock').style.display = 'none';
+        
+        // 예약 데이터 다시 로드
+        loadReservationData();
+    });
+
+    // 달력 관련 변수
+    let currentDate = new Date();
+    let currentYear = currentDate.getFullYear();
+    let currentMonth = currentDate.getMonth();
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 날짜를 YYYY-MM-DD 형식으로 변환 (로컬 시간대 사용)
+    function formatDateToYYYYMMDD(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // 달력 초기화
+    function initCalendar() {
+        updateCalendarTitle();
+        generateCalendar();
+        
+        // 월 이동 버튼 이벤트
+        document.getElementById('prevMonth').addEventListener('click', function() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            updateCalendarTitle();
+            generateCalendar();
+        });
+        
+        document.getElementById('nextMonth').addEventListener('click', function() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            updateCalendarTitle();
+            generateCalendar();
+        });
+    }
+
+    // 달력 제목 업데이트
+    function updateCalendarTitle() {
+        const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+        document.getElementById('calendarTitle').textContent = `${currentYear}년 ${monthNames[currentMonth]}`;
+    }
+
+    // 달력 생성
+    function generateCalendar() {
+        const calendarBody = document.getElementById('calendarBody');
+        calendarBody.innerHTML = '';
+        
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+        
+        let currentRow = document.createElement('tr');
+        
+        for (let i = 0; i < 42; i++) { // 6주 * 7일
+            const currentDate = new Date(startDate);
+            currentDate.setDate(startDate.getDate() + i);
+            
+            const dayCell = document.createElement('td');
+            
+            if (currentDate.getMonth() === currentMonth) {
+                const dayNumber = currentDate.getDate();
+                const dateString = formatDateToYYYYMMDD(currentDate);
+                const isToday = currentDate.getTime() === today.getTime();
+                const isPast = currentDate < today;
+                const dayOfWeek = currentDate.getDay(); // 0: 일요일, 6: 토요일
+                
+                let dayClass = 'calendar-day';
+                if (isPast) dayClass += ' disabled';
+                if (isToday) dayClass += ' today';
+                if (dayOfWeek === 0) dayClass += ' sunday'; // 일요일
+                if (dayOfWeek === 6) dayClass += ' saturday'; // 토요일
+                
+                dayCell.innerHTML = `<div class="${dayClass}" data-date="${dateString}">${dayNumber}</div>`;
+                
+                if (isToday) {
+                    dayCell.querySelector('.calendar-day').style.background = 'linear-gradient(90deg, #ffd6e3 0%, #a8edea 100%)';
+                    dayCell.querySelector('.calendar-day').style.color = '#fff';
+                    dayCell.querySelector('.calendar-day').style.fontWeight = '800';
+                }
+            }
+            
+            currentRow.appendChild(dayCell);
+            
+            if ((i + 1) % 7 === 0) {
+                calendarBody.appendChild(currentRow);
+                currentRow = document.createElement('tr');
+            }
+        }
+        
+        // 달력 날짜 클릭 이벤트 재등록
+        document.getElementById('calendarBody').addEventListener('click', function(e) {
+            if (e.target.classList.contains('calendar-day') && !e.target.classList.contains('disabled') && e.target.textContent) {
+                document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+                e.target.classList.add('selected');
+                selectedDate = e.target.getAttribute('data-date');
+                selectedTime = null;
+                
+                // 예약 데이터 확인 후 시간 선택 UI 표시
+                checkReservationsAndShowTimeSelect();
+            }
+        });
+    }
+
+    // 달력 초기화 실행
+    initCalendar();
+
+    function showTimeSelect() {
+        const block = document.getElementById('timeSelectBlock');
+        block.style.display = 'block';
+        
+        console.log('시간 선택 UI 표시:', selectedDate); // 디버깅
+        
+        // 예약 데이터가 로드되지 않았다면 다시 로드
+        if (Object.keys(reservationData).length === 0) {
+            loadReservationData().then(() => {
+                showTimeSelect();
+            });
+            return;
+        }
+        
+        block.innerHTML = `
+            <div style="margin-bottom: 20px; text-align: center;">
+                <h3 style="color: #3498db; margin: 0;">선택된 날짜: ${selectedDate}</h3>
+            </div>
+            <div class="ampm-tabs">
+                <button class="ampm-tab${selectedAMPM==='AM'?' active':''}" data-ampm="AM">오전</button>
+                <button class="ampm-tab${selectedAMPM==='PM'?' active':''}" data-ampm="PM">오후</button>
+            </div>
+            <div class="time-btn-group">
+                ${getTimeBtnsHTML()}
+            </div>
+        `;
+        
+        // 오전/오후 탭 이벤트
+        block.querySelectorAll('.ampm-tab').forEach(tab => {
+            tab.onclick = function() {
+                selectedAMPM = tab.getAttribute('data-ampm');
+                showTimeSelect();
+            }
+        });
+        
+        // 시간 버튼 이벤트
+        block.querySelectorAll('.time-btn').forEach(btn => {
+            if (!btn.classList.contains('disabled')) {
+                btn.onclick = function() {
+                    block.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    selectedTime = btn.getAttribute('data-time');
+                    console.log('선택된 시간:', selectedTime); // 디버깅
+                }
+            }
+        });
+    }
+
+    async function loadReservationData() {
+        try {
+            console.log('=== 예약 데이터 로드 시작 ===');
+            const response = await fetch('/api/reservations');
+            const reservations = await response.json();
+            
+            console.log('API에서 받은 원본 예약 데이터:', reservations);
+            console.log('예약 데이터 개수:', reservations.length);
+            
+            // 예약 데이터를 정확히 정리
+            reservationData = {};
+            reservations.forEach((reservation, index) => {
+                console.log(`예약 ${index + 1} 처리:`, reservation);
+                
+                // facility에 일반 시설명, detail에 세부선택이 들어가는 구조
+                // 따라서 facility + detail 조합으로 검색
+                const key = reservation.facility + '||' + (reservation.detail || '-');
+                console.log(`  → 생성된 키: "${key}"`);
+                
+                if (!reservationData[key]) {
+                    reservationData[key] = {};
+                    console.log(`  → 새 키 생성: "${key}"`);
+                }
+                if (!reservationData[key][reservation.date]) {
+                    reservationData[key][reservation.date] = [];
+                    console.log(`  → 새 날짜 추가: "${reservation.date}"`);
+                }
+                reservationData[key][reservation.date].push(reservation.start_time);
+                console.log(`  → 시간 추가: "${reservation.start_time}"`);
+                
+                console.log(`예약 처리 완료: facility="${reservation.facility}", detail="${reservation.detail}", key="${key}", date="${reservation.date}", time="${reservation.start_time}"`);
+            });
+            
+            console.log('최종 정리된 예약 데이터:', reservationData);
+            console.log('예약 데이터 키들:', Object.keys(reservationData));
+            console.log('=== 예약 데이터 로드 완료 ===');
+        } catch (error) {
+            console.error('예약 데이터 로드 오류:', error);
+        }
+    }
+
+    function getTimeBtnsHTML() {
+        const slots = selectedAMPM==='AM' ? amSlots : pmSlots;
+        
+        // 세부선택된 시설명 사용 (댄스연습실은 예외)
+        const finalFacility = facilityName === '댄스연습실' ? facilityName : selectedFacility;
+        
+        // 정확한 예약 시간 가져오기
+        const reserved = getReservedTimes(facilityName, selectedFacility, selectedDate);
+        
+        console.log('=== 시간 버튼 생성 디버깅 ===');
+        console.log('facilityName:', facilityName);
+        console.log('selectedFacility:', selectedFacility);
+        console.log('finalFacility:', finalFacility);
+        console.log('selectedDate:', selectedDate);
+        console.log('예약된 시간:', reserved);
+        
+        // 오늘 날짜인지 확인 (로컬 시간대 사용)
+        const todayStr = formatDateToYYYYMMDD(today);
+        const isToday = selectedDate === todayStr;
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        
+        let html = '';
+        slots.forEach(time => {
+            const isReserved = reserved.includes(time);
+            let isPastTime = false;
+            
+            if (isToday) {
+                const [hour, minute] = time.split(':').map(Number);
+                if (hour < currentHour || (hour === currentHour && minute <= currentMinute)) {
+                    isPastTime = true;
+                }
+            }
+            
+            const isDisabled = isReserved || isPastTime;
+            const disabledText = isReserved ? ' (예약됨)' : '';
+            
+            console.log(`시간 ${time}: isReserved=${isReserved}, isPastTime=${isPastTime}, isDisabled=${isDisabled}`);
+            
+            // 클래스와 속성을 더 명확하게 설정
+            let buttonClass = 'time-btn';
+            if (isDisabled) buttonClass += ' disabled';
+            if (selectedTime === time) buttonClass += ' selected';
+            
+            let buttonHtml = `<button class="${buttonClass}" data-time="${time}"`;
+            if (isDisabled) buttonHtml += ' disabled';
+            buttonHtml += `>${time}${disabledText}</button>`;
+            
+            html += buttonHtml;
+        });
+        
+        console.log('생성된 HTML:', html);
+        return html;
+    }
+
+    // 이전/다음 버튼 동작
+    const actions = document.querySelector('.form-actions-centered');
+    if (actions) {
+        const [prevBtn, nextBtn] = actions.querySelectorAll('button');
+        prevBtn.onclick = function(e) {
+            e.preventDefault();
+            window.location.href = 'select-facility.html';
+        };
+        nextBtn.onclick = function(e) {
+            e.preventDefault();
+            
+            console.log('다음 버튼 클릭 - 선택된 항목들:'); // 디버깅
+            console.log('시설:', facilityName);
+            console.log('세부선택:', detailSelect.value);
+            console.log('날짜:', selectedDate);
+            console.log('시간:', selectedTime);
+            
+            // 유효성 검사
+            let needDetail = facilityName !== '댄스연습실';
+            let detailValue = needDetail ? detailSelect.value : null;
+            
+            if (needDetail && !detailValue) {
+                showModal('세부선택을 선택해주세요.');
+                return;
+            }
+            
+            if (!selectedDate) {
+                showModal('날짜를 선택해주세요.');
+                return;
+            }
+            
+            if (!selectedTime) {
+                showModal('시간을 선택해주세요.');
+                return;
+            }
+            
+            // 예약 데이터 준비
+            const userName = localStorage.getItem('userName') || '고객';
+            const userPhone = localStorage.getItem('userPhone') || '';
+            
+            const reservationData = {
+                name: userName,
+                phone: userPhone || undefined, // 빈 문자열 대신 undefined 전송
+                facility: facilityName, // 일반 시설명
+                detail: detailValue || '-', // 세부선택
+                date: selectedDate,
+                start_time: selectedTime,
+                end_time: getEndTime(selectedTime), // 1시간 후
+                purpose: ''
+            };
+            
+            console.log('예약 데이터:', reservationData); // 디버깅
+            
+            // 예약 API 호출
+            createReservation(reservationData);
+        };
+    }
+
+    // 종료 시간 계산 (1시간 후)
+    function getEndTime(startTime) {
+        const [hour, minute] = startTime.split(':').map(Number);
+        const endHour = hour + 1;
+        return `${endHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    }
+    
+    // 예약 생성 API 호출
+    async function createReservation(data) {
+        try {
+            const response = await fetch('/api/reservations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                showModal(result.error || '예약 생성에 실패했습니다.');
+                return;
+            }
+            
+            // 예약 성공 시 localStorage에 저장
+            localStorage.setItem('reservationFacility', data.facility);
+            localStorage.setItem('reservationDetail', data.detail);
+            localStorage.setItem('reservationDate', data.date);
+            localStorage.setItem('reservationTime', data.start_time);
+            localStorage.setItem('reservationId', result.id);
+            
+            // 예약 완료 페이지로 이동
+            window.location.href = 'reservation-complete.html';
+            
+        } catch (error) {
+            console.error('예약 생성 오류:', error);
+            showModal('예약 생성 중 오류가 발생했습니다.');
+        }
+    }
+
+    // 간단한 모달 함수 추가
+    function showModal(msg) {
+        let modal = document.createElement('div');
+        modal.style.position = 'fixed';
+        modal.style.left = 0;
+        modal.style.top = 0;
+        modal.style.width = '100vw';
+        modal.style.height = '100vh';
+        modal.style.background = 'rgba(0,0,0,0.35)';
+        modal.style.display = 'flex';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.zIndex = 9999;
+        modal.innerHTML = `<div style="background:#fff;padding:32px 28px;border-radius:18px;box-shadow:0 4px 24px #3498db22;font-size:1.15rem;font-weight:600;color:#3498db;text-align:center;min-width:220px;max-width:90vw;">${msg}<br><br><button style='margin-top:18px;padding:10px 28px;border-radius:12px;background:linear-gradient(90deg,#a8edea,#fed6e3);border:none;font-weight:700;font-size:1.08rem;color:#222;cursor:pointer;' onclick='this.parentElement.parentElement.remove()'>확인</button></div>`;
+        document.body.appendChild(modal);
+        
+        // 모달 배경 클릭 시에도 닫기
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // 예약 데이터 확인 후 시간 선택 UI 표시
+    async function checkReservationsAndShowTimeSelect() {
+        // 예약 데이터가 없으면 다시 로드
+        if (Object.keys(reservationData).length === 0) {
+            await loadReservationData();
+        }
+        showTimeSelect();
+    }
+
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+        // 페이지 로드 시 예약 데이터 가져오기
+        loadReservationData();
+    });
+    </script>
+</body>
+</html> 

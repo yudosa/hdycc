@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예약 취소 - 흥덕청소년 문화의집</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .cancel-form-block {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 16px rgba(52, 152, 219, 0.10);
+            padding: 48px 32px 32px 32px;
+            margin: 0 auto;
+            max-width: 540px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .cancel-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #e74c3c;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+        .cancel-desc {
+            font-size: 1.12rem;
+            color: #555;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+        .search-form {
+            width: 100%;
+            margin-bottom: 32px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e0e7ef;
+            border-radius: 16px;
+            font-size: 1.12rem;
+            font-weight: 600;
+            color: #3498db;
+            background: #fff;
+            transition: border-color 0.18s, box-shadow 0.18s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+        .search-btn {
+            width: 100%;
+            padding: 16px 20px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.12rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%);
+            color: #222;
+            cursor: pointer;
+            transition: transform 0.18s;
+        }
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+        .reservation-list {
+            width: 100%;
+            margin-top: 24px;
+        }
+        .reservation-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid #dee2e6;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(52, 152, 219, 0.08);
+        }
+        .reservation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .reservation-name {
+            font-weight: 800;
+            color: #2c3e50;
+            font-size: 1.3rem;
+        }
+        .reservation-date {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        .reservation-details {
+            margin-bottom: 16px;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .detail-label {
+            font-weight: 700;
+            color: #3498db;
+            font-size: 1.15rem;
+        }
+        .detail-value {
+            color: #2c3e50;
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+        .cancel-btn {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.18s;
+        }
+        .cancel-btn:hover {
+            transform: translateY(-1px);
+        }
+        .no-reservation {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            padding: 40px 20px;
+        }
+        .loading {
+            text-align: center;
+            color: #3498db;
+            font-size: 1.1rem;
+            padding: 40px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="rental-wrapper">
+        <div class="rental-container">
+            <img src="hd.jpg" alt="흥덕청소년 문화의집 건물" class="main-building-img">
+            <header class="rental-header" style="padding: 21px 0 0 0;">
+                <h1 style="font-size:1.47rem; font-weight:800; color:#222; margin-bottom:8px;">예약 취소</h1>
+                <p class="rental-subtitle" style="font-size:1.12rem; color:#555; text-align:center; margin-bottom:21px;">본인의 예약 내역을 확인하고 취소하세요</p>
+            </header>
+            <main class="rental-main">
+                <div class="cancel-form-block">
+                    <div class="cancel-title" style="font-size:1.5rem; font-weight:800; color:#e74c3c; margin-bottom:7px;">예약 조회</div>
+                    <div class="cancel-desc" style="font-size:1.12rem; color:#555; text-align:center; margin-bottom:21px;">이름과 전화번호를 입력하여 본인의 예약 내역을 확인하세요.</div>
+                    
+                    <form class="search-form" id="searchForm">
+                        <div class="form-group">
+                            <label for="searchName">이름</label>
+                            <input type="text" id="searchName" name="searchName" placeholder="이름을 입력하세요" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="searchPhone">전화번호</label>
+                            <input type="tel" id="searchPhone" name="searchPhone" placeholder="예: 010-1234-5678" required>
+                        </div>
+                        <button type="submit" class="search-btn">예약 내역 조회</button>
+                    </form>
+                    
+                    <div class="reservation-list" id="reservationList" style="display: none;">
+                        <!-- 예약 내역이 여기에 표시됩니다 -->
+                    </div>
+                    
+                    <div class="form-actions-centered">
+                        <button class="btn-secondary-centered" onclick="window.location.href='index.html'" style="color:#222;">↻ 처음으로</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // 전화번호 자동 포맷팅
+        document.getElementById('searchPhone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            
+            if (value.length >= 3 && value.length <= 6) {
+                value = value.replace(/(\d{3})(\d{0,3})/, '$1-$2');
+            } else if (value.length >= 7) {
+                value = value.replace(/(\d{3})(\d{3,4})(\d{0,4})/, '$1-$2-$3');
+            }
+            
+            e.target.value = value;
+        });
+
+        // 예약 조회 폼 제출
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('searchName').value.trim();
+            const phone = document.getElementById('searchPhone').value.trim();
+            
+            if (!name || !phone) {
+                showModal('이름과 전화번호를 모두 입력해주세요.');
+                return;
+            }
+            
+            // 전화번호 유효성 검사
+            const phoneDigits = phone.replace(/[^0-9]/g, '');
+            
+            if (phoneDigits.length !== 11) {
+                showModal('전화번호 형식이 잘못되었습니다.\n11자리 전화번호를 모두 입력해주세요.');
+                document.getElementById('searchPhone').focus();
+                return;
+            }
+            
+            searchReservations(name, phone);
+        });
+
+        // 예약 조회 API 호출
+        async function searchReservations(name, phone) {
+            const reservationList = document.getElementById('reservationList');
+            reservationList.style.display = 'block';
+            reservationList.innerHTML = '<div class="loading">예약 내역을 조회하는 중...</div>';
+            
+            try {
+                const response = await fetch('/api/reservations');
+                if (!response.ok) {
+                    throw new Error('예약 내역을 불러올 수 없습니다.');
+                }
+                
+                const reservations = await response.json();
+                
+                // 이름과 전화번호로 필터링
+                const userReservations = reservations.filter(reservation => 
+                    reservation.name === name && reservation.phone === phone
+                );
+                
+                displayReservations(userReservations);
+                
+            } catch (error) {
+                console.error('예약 조회 오류:', error);
+                reservationList.innerHTML = '<div class="no-reservation">예약 내역을 불러올 수 없습니다.</div>';
+            }
+        }
+
+        // 예약 내역 표시
+        function displayReservations(reservations) {
+            const reservationList = document.getElementById('reservationList');
+            
+            if (reservations.length === 0) {
+                reservationList.innerHTML = '<div class="no-reservation">해당 정보로 등록된 예약이 없습니다.</div>';
+                return;
+            }
+            
+            // 예약을 날짜순으로 정렬 (최신순)
+            reservations.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            let html = '';
+            reservations.forEach(reservation => {
+                html += `
+                    <div class="reservation-item">
+                        <div class="reservation-header">
+                            <div class="reservation-name">${reservation.name}님의 예약</div>
+                            <div class="reservation-date">${formatDate(reservation.date)}</div>
+                        </div>
+                        <div class="reservation-details">
+                            <div class="detail-row">
+                                <span class="detail-label">시설명:</span>
+                                <span class="detail-value">${reservation.facility}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">세부선택:</span>
+                                <span class="detail-value">${reservation.detail !== '-' ? reservation.detail : '-'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">예약시간:</span>
+                                <span class="detail-value">${reservation.start_time} ~ ${reservation.end_time}</span>
+                            </div>
+                            ${reservation.purpose ? `
+                            <div class="detail-row">
+                                <span class="detail-label">이용목적:</span>
+                                <span class="detail-value">${reservation.purpose}</span>
+                            </div>
+                            ` : ''}
+                            <div class="detail-row">
+                                <span class="detail-label">예약번호:</span>
+                                <span class="detail-value">#${reservation.id}</span>
+                            </div>
+                        </div>
+                        <button class="cancel-btn" onclick="cancelReservation(${reservation.id})">예약 취소</button>
+                    </div>
+                `;
+            });
+            
+            reservationList.innerHTML = html;
+        }
+
+        // 날짜 포맷팅
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
+            
+            return `${year}년 ${month}월 ${day}일 (${dayOfWeek})`;
+        }
+
+        // 예약 취소
+        async function cancelReservation(reservationId) {
+            // 해당 예약 정보를 가져와서 모달에 표시
+            try {
+                const response = await fetch('/api/reservations');
+                if (!response.ok) {
+                    throw new Error('예약 정보를 불러올 수 없습니다.');
+                }
+                
+                const reservations = await response.json();
+                const reservation = reservations.find(r => r.id === reservationId);
+                
+                if (!reservation) {
+                    showModal('예약 정보를 찾을 수 없습니다.');
+                    return;
+                }
+                
+                showCancelConfirmModal(reservation);
+                
+            } catch (error) {
+                console.error('예약 정보 조회 오류:', error);
+                showModal('예약 정보를 불러올 수 없습니다.');
+            }
+        }
+        
+        // 취소 확인 모달 표시
+        function showCancelConfirmModal(reservation) {
+            let modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.left = 0;
+            modal.style.top = 0;
+            modal.style.width = '100vw';
+            modal.style.height = '100vh';
+            modal.style.background = 'rgba(0,0,0,0.35)';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.zIndex = 9999;
+            
+            modal.innerHTML = `
+                <div style="background:#fff;padding:32px 28px;border-radius:18px;box-shadow:0 4px 24px #e74c3c22;font-size:1.15rem;font-weight:600;color:#e74c3c;text-align:center;min-width:380px;max-width:90vw;">
+                    <div style="font-size:2rem;margin-bottom:16px;">❌</div>
+                    <div style="margin-bottom:20px;color:#2c3e50;">
+                        <strong>현재 나의 예약 내역</strong><br><br>
+                        <div style="background:linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);border:1px solid #dee2e6;border-radius:12px;padding:16px;margin:12px 0;text-align:left;font-size:0.95rem;">
+                            <div style="margin-bottom:8px;"><strong style="color:#3498db;">예약번호:</strong> #${reservation.id}</div>
+                            <div style="margin-bottom:8px;"><strong style="color:#3498db;">시설명:</strong> ${reservation.facility}</div>
+                            <div style="margin-bottom:8px;"><strong style="color:#3498db;">세부선택:</strong> ${reservation.detail !== '-' ? reservation.detail : '-'}</div>
+                            <div style="margin-bottom:8px;"><strong style="color:#3498db;">예약일:</strong> ${formatDate(reservation.date)}</div>
+                            <div style="margin-bottom:8px;"><strong style="color:#3498db;">예약시간:</strong> ${reservation.start_time} ~ ${reservation.end_time}</div>
+                            ${reservation.purpose ? `<div style="margin-bottom:8px;"><strong style="color:#3498db;">이용목적:</strong> ${reservation.purpose}</div>` : ''}
+                        </div>
+                    </div>
+                    <div style="font-weight:700;margin-bottom:24px;color:#e74c3c;">예약을 취소하시겠습니까?</div>
+                    <div style="display:flex;gap:12px;justify-content:center;">
+                        <button style='padding:10px 24px;border-radius:12px;background:linear-gradient(90deg,#e74c3c,#c0392b);border:none;font-weight:700;font-size:1rem;color:#fff;cursor:pointer;' onclick='confirmCancel(${reservation.id})'>확인</button>
+                        <button style='padding:10px 24px;border-radius:12px;background:linear-gradient(90deg,#a8edea,#fed6e3);border:none;font-weight:700;font-size:1rem;color:#222;cursor:pointer;' onclick='this.closest("div").parentElement.remove()'>취소</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 모달 배경 클릭 시 닫기
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // 취소 확인 처리
+        async function confirmCancel(reservationId) {
+            // 모달 닫기
+            document.querySelector('div[style*="position: fixed"]').remove();
+            
+            try {
+                const response = await fetch(`/api/reservations/${reservationId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    const result = await response.json();
+                    throw new Error(result.error || '예약 취소에 실패했습니다.');
+                }
+                
+                showSuccessModal('예약이 성공적으로 취소되었습니다.');
+                
+                // 예약 목록 새로고침
+                const name = document.getElementById('searchName').value.trim();
+                const phone = document.getElementById('searchPhone').value.trim();
+                await searchReservations(name, phone);
+                
+            } catch (error) {
+                console.error('예약 취소 오류:', error);
+                showModal(error.message || '예약 취소 중 오류가 발생했습니다.');
+            }
+        }
+        
+        // 성공 모달 표시
+        function showSuccessModal(msg) {
+            let modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.left = 0;
+            modal.style.top = 0;
+            modal.style.width = '100vw';
+            modal.style.height = '100vh';
+            modal.style.background = 'rgba(0,0,0,0.35)';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.zIndex = 9999;
+            
+            modal.innerHTML = `
+                <div style="background:#fff;padding:32px 28px;border-radius:18px;box-shadow:0 4px 24px #27ae6022;font-size:1.15rem;font-weight:600;color:#27ae60;text-align:center;min-width:220px;max-width:90vw;">
+                    <div style="font-size:2rem;margin-bottom:16px;width:60px;height:60px;border:3px solid #27ae60;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px auto;background:#27ae60;color:#fff;">✓</div>
+                    <div style="margin-bottom:20px;">${msg}</div>
+                    <button style='margin-top:8px;padding:10px 28px;border-radius:12px;background:linear-gradient(90deg,#a8edea,#fed6e3);border:none;font-weight:700;font-size:1.08rem;color:#222;cursor:pointer;' onclick='this.parentElement.parentElement.remove()'>확인</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 모달 배경 클릭 시 닫기
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        // 모달 표시
+        function showModal(msg) {
+            let modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.left = 0;
+            modal.style.top = 0;
+            modal.style.width = '100vw';
+            modal.style.height = '100vh';
+            modal.style.background = 'rgba(0,0,0,0.35)';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.zIndex = 9999;
+            // 메시지에 따라 색상 다르게 적용
+            let color = '#e74c3c'; // 기본 빨간색
+            if (msg.includes('성공적으로 취소')) color = '#3498db'; // 파란색
+            modal.innerHTML = `
+                <div style="background:#fff;padding:32px 28px;border-radius:18px;box-shadow:0 4px 24px #e74c3c22;font-size:1.15rem;font-weight:600;color:${color};text-align:center;min-width:220px;max-width:90vw;">
+                    ${msg}<br><br>
+                    <button style='margin-top:18px;padding:10px 28px;border-radius:12px;background:linear-gradient(90deg,#e74c3c,#c0392b);border:none;font-weight:700;font-size:1.08rem;color:#fff;cursor:pointer;' onclick='this.parentElement.parentElement.remove()'>확인</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+    </script>
+</body>
+</html> 

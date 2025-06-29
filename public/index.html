@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>흥덕청소년 문화의집 - 시설 이용 예약</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+    <div class="container vertical-layout">
+        <header>
+            <img src="hd.jpg" alt="흥덕청소년 문화의집 건물" class="main-building-img">
+            <div class="welcome-block">
+                <span class="main-title">용인특례시 흥덕청소년문화의집<br>오신것을 환영합니다</span>
+            </div>
+            <img src="jo.png" alt="마스코트" class="mascot-img-below">
+            <p class="welcome-desc">청소년 문화의집 방문을 진심으로 환영합니다.<br>아래 탭에서 원하는 서비스를 선택하세요!</p>
+        </header>
+        <nav class="main-tabs">
+            <div class="tab-row">
+                <a href="rental.html" class="tab-btn">시설 이용</a>
+                <a href="cancel-reservation.html" class="tab-btn">예약 취소</a>
+            </div>
+            <div class="tab-row single">
+                <a href="status.html" class="tab-btn wide-tab">이용현황</a>
+            </div>
+        </nav>
+        <main>
+            <section id="tab-cancel" class="tab-section" style="display:none;">
+                <h3>예약 취소</h3>
+                <div class="coming-soon">준비 중입니다 :)</div>
+            </section>
+            <section id="tab-rental" class="tab-section" style="display:none;">
+                <h3>이용자 정보를 입력해주세요.</h3>
+                <form class="user-info-form">
+                    <div class="form-group">
+                        <label for="user-name">성명 ✍️</label>
+                        <input type="text" id="user-name" name="user-name" placeholder="이름을 입력하세요" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="user-age">나이 🎂</label>
+                            <select id="user-age" name="user-age" required>
+                                <option value="">선택</option>
+                                <option value="10대 미만">10대 미만</option>
+                                <option value="10대">10대</option>
+                                <option value="20대">20대</option>
+                                <option value="30대">30대</option>
+                                <option value="40대">40대</option>
+                                <option value="50대 이상">50대 이상</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="user-gender">성별 🚻</label>
+                            <select id="user-gender" name="user-gender" required>
+                                <option value="">선택</option>
+                                <option value="남">남</option>
+                                <option value="여">여</option>
+                                <option value="기타">기타</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-phone">핸드폰번호 📱</label>
+                        <input type="tel" id="user-phone" name="user-phone" placeholder="예: 010-1234-5678" required>
+                    </div>
+                    <div class="form-row form-btn-row">
+                        <button type="button" class="btn-primary btn-prev">&lt; 이전</button>
+                        <button type="submit" class="btn-primary btn-next">다음 &gt;</button>
+                    </div>
+                </form>
+            </section>
+            <section id="tab-status" class="tab-section" style="display:none;">
+                <h3>이용 현황</h3>
+                <div class="date-selector">
+                    <label for="statusDate">날짜 선택:</label>
+                    <input type="date" id="statusDate" name="statusDate">
+                    <button id="loadReservations" class="btn-secondary">조회</button>
+                </div>
+                <div id="reservationsList" class="reservations-list"></div>
+            </section>
+        </main>
+        <div id="notification" class="notification"></div>
+    </div>
+    <div class="facility-qr-row">
+        <section class="facilities-info facility-info-card facility-info-3line">
+            <h3>시설 안내</h3>
+            <div class="facility-3line">
+                <div class="facility-title">흥덕청소년문화의집</div>
+                <div class="facility-address">경기도 용인시 기흥구 흥덕2로 110</div>
+                <div class="facility-tel">T. 031-328-9765</div>
+                <div class="facility-fax">F. 031-328-976</div>
+            </div>
+        </section>
+        <section class="qr-info-card">
+            <h3>QR 안내</h3>
+            <img src="qr.jpg" alt="QR 코드" class="facility-qr-img">
+        </section>
+    </div>
+    <script>
+        // 전화번호 자동 포맷팅
+        document.getElementById('user-phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            if (value.length >= 3 && value.length <= 6) {
+                value = value.replace(/(\d{3})(\d{0,3})/, '$1-$2');
+            } else if (value.length >= 7) {
+                value = value.replace(/(\d{3})(\d{3,4})(\d{0,4})/, '$1-$2-$3');
+            }
+            e.target.value = value;
+        });
+        // 폼 제출 처리
+        document.querySelector('.user-info-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // 전화번호 유효성 검사
+            const userPhone = document.getElementById('user-phone').value;
+            const phoneDigits = userPhone.replace(/[^0-9]/g, '');
+            if (phoneDigits.length !== 11) {
+                showModal('전화번호 형식이 잘못되었습니다.<br>11자리 전화번호를 모두 입력해주세요.');
+                document.getElementById('user-phone').focus();
+                return;
+            }
+            window.location.href = 'rental.html';
+        });
+        // 커스텀 모달 함수
+        function showModal(msg) {
+            let modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.left = 0;
+            modal.style.top = 0;
+            modal.style.width = '100vw';
+            modal.style.height = '100vh';
+            modal.style.background = 'rgba(0,0,0,0.35)';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.zIndex = 9999;
+            modal.innerHTML = `
+                <div style="background:#fff;padding:32px 28px;border-radius:18px;box-shadow:0 4px 24px #e74c3c22;font-size:1.15rem;font-weight:600;color:#e74c3c;text-align:center;min-width:220px;max-width:90vw;">
+                    ${msg}<br><br>
+                    <button style='margin-top:18px;padding:10px 28px;border-radius:12px;background:linear-gradient(90deg,#e74c3c,#c0392b);border:none;font-weight:700;font-size:1.08rem;color:#fff;cursor:pointer;' onclick='this.parentElement.parentElement.remove()'>확인</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+    </script>
+    <style>
+    .main-tabs .tab-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 6px;
+    }
+    .main-tabs .tab-row.single {
+        margin-top: 0;
+        margin-bottom: 18px;
+        justify-content: center;
+    }
+    .tab-btn.wide-tab {
+        flex: 1 1 0;
+        max-width: 420px;
+        min-width: 220px;
+        font-size: 1.15rem;
+        font-weight: 700;
+        padding: 18px 0;
+        border-radius: 18px;
+        background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%);
+        color: #222;
+        box-shadow: 0 2px 12px #e0e7ef88;
+        text-align: center;
+        margin: 0 auto;
+        display: block;
+    }
+    @media (max-width: 600px) {
+        .tab-btn.wide-tab { font-size: 1rem; padding: 14px 0; }
+    }
+    </style>
+</body>
+</html> 
