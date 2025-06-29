@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "흥덕청소년 문화의집 시설 이용 예약 시스템",
   "main": "app.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "init-db": "node init-db.js",
-    "postinstall": "node init-db.js"
+    "init-db": "node init-db.js"
   },
   "keywords": ["reservation", "express", "nodejs"],
   "author": "Your Name",
