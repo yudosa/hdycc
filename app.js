@@ -9,8 +9,34 @@ const reservationRoutes = require('./routes/reservations');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// CORS 설정 강화 - 배포 환경 고려
+const corsOptions = {
+    origin: function (origin, callback) {
+        // 개발 환경에서는 모든 origin 허용
+        if (!origin || process.env.NODE_ENV !== 'production') {
+            return callback(null, true);
+        }
+        
+        // 프로덕션 환경에서는 특정 도메인만 허용
+        const allowedOrigins = [
+            'https://your-domain.vercel.app',
+            'https://your-domain.netlify.app',
+            'https://your-domain.com'
+        ];
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('CORS 정책에 의해 차단되었습니다.'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 // 미들웨어 설정
-app.use(cors()); // 다른 도메인에서의 요청 허용
+app.use(cors(corsOptions)); // CORS 설정 적용
 app.use(bodyParser.json()); // JSON 데이터 파싱
 app.use(bodyParser.urlencoded({ extended: true })); // URL 인코딩된 데이터 파싱
 

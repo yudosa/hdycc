@@ -1,15 +1,17 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// 데이터베이스 파일 경로
-const dbPath = path.join(__dirname, 'reservations.db');
+// 데이터베이스 파일 경로 - 배포 환경 고려
+const dbPath = process.env.DATABASE_PATH || path.join(__dirname, 'reservations.db');
 
 // 데이터베이스 연결
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('데이터베이스 연결 오류:', err.message);
+        console.error('데이터베이스 경로:', dbPath);
     } else {
         console.log('SQLite 데이터베이스에 연결되었습니다.');
+        console.log('데이터베이스 경로:', dbPath);
         createTables();
     }
 });
@@ -129,5 +131,9 @@ function insertDefaultFacilities() {
         }
     });
 }
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',') 
+    : ['*'];
 
 module.exports = db; 

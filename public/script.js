@@ -139,6 +139,8 @@ async function handleReservationSubmit(event) {
         purpose: formData.get('purpose') || ''
     };
     
+    console.log('예약 데이터 전송:', reservationData);
+    
     try {
         const response = await fetch(API_BASE_URL, {
             method: 'POST',
@@ -148,10 +150,14 @@ async function handleReservationSubmit(event) {
             body: JSON.stringify(reservationData)
         });
         
+        console.log('서버 응답 상태:', response.status);
+        console.log('서버 응답 헤더:', Object.fromEntries(response.headers.entries()));
+        
         const result = await response.json();
+        console.log('서버 응답 데이터:', result);
         
         if (!response.ok) {
-            throw new Error(result.error || '예약 생성에 실패했습니다.');
+            throw new Error(result.error || `서버 오류 (${response.status}): ${response.statusText}`);
         }
         
         showNotification('예약이 성공적으로 완료되었습니다!', 'success');
@@ -163,8 +169,16 @@ async function handleReservationSubmit(event) {
         }
         
     } catch (error) {
-        showNotification(error.message, 'error');
-        console.error('예약 제출 오류:', error);
+        console.error('예약 제출 상세 오류:', error);
+        console.error('에러 스택:', error.stack);
+        
+        // 네트워크 오류인지 서버 오류인지 구분
+        let errorMessage = error.message;
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            errorMessage = '서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.';
+        }
+        
+        showNotification(errorMessage, 'error');
     }
 }
 

@@ -39,10 +39,13 @@ router.get('/date/:date', (req, res) => {
 
 // 새로운 예약 생성
 router.post('/', (req, res) => {
+    console.log('예약 생성 요청 받음:', req.body);
+    
     const { name, phone, facility, detail, date, start_time, end_time, purpose } = req.body;
     
     // 필수 필드 검증 (phone은 선택사항으로 변경)
     if (!name || !facility || !date || !start_time || !end_time) {
+        console.log('필수 필드 누락:', { name, facility, date, start_time, end_time });
         return res.status(400).json({ error: '필수 필드를 입력해주세요. (이름, 시설, 날짜, 시작시간, 종료시간)' });
     }
     
@@ -51,11 +54,13 @@ router.post('/', (req, res) => {
     
     // 날짜 형식 검증
     if (!moment(date, 'YYYY-MM-DD', true).isValid()) {
+        console.log('잘못된 날짜 형식:', date);
         return res.status(400).json({ error: '올바른 날짜 형식을 입력해주세요 (YYYY-MM-DD).' });
     }
     
     // 시간 형식 검증
     if (!moment(start_time, 'HH:mm', true).isValid() || !moment(end_time, 'HH:mm', true).isValid()) {
+        console.log('잘못된 시간 형식:', { start_time, end_time });
         return res.status(400).json({ error: '올바른 시간 형식을 입력해주세요 (HH:mm).' });
     }
     
@@ -64,11 +69,13 @@ router.post('/', (req, res) => {
     const selectedDate = moment(date).startOf('day');
     
     if (selectedDate.isBefore(today)) {
+        console.log('과거 날짜 예약 시도:', date);
         return res.status(400).json({ error: '과거 날짜는 예약할 수 없습니다.' });
     }
     
     // 시간 순서 검증
     if (moment(start_time, 'HH:mm').isSameOrAfter(moment(end_time, 'HH:mm'))) {
+        console.log('잘못된 시간 순서:', { start_time, end_time });
         return res.status(400).json({ error: '종료 시간은 시작 시간보다 늦어야 합니다.' });
     }
     
@@ -79,13 +86,17 @@ router.post('/', (req, res) => {
         AND ((start_time <= ? AND end_time > ?) OR (start_time < ? AND end_time >= ?) OR (start_time >= ? AND end_time <= ?))
     `;
     
+    console.log('중복 예약 확인 쿼리 실행:', { facility, detail: detail || '-', date, start_time, end_time });
+    
     db.get(checkQuery, [facility, detail || '-', date, start_time, start_time, end_time, end_time, start_time, end_time], (err, row) => {
         if (err) {
+            console.error('중복 예약 확인 중 DB 오류:', err.message);
             res.status(500).json({ error: err.message });
             return;
         }
         
         if (row) {
+            console.log('중복 예약 발견:', row);
             return res.status(400).json({ error: '해당 시간에 이미 예약이 있습니다.' });
         }
         
@@ -95,12 +106,17 @@ router.post('/', (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `;
         
-        db.run(insertQuery, [name, phoneNumber, facility, detail || '-', date, start_time, end_time, purpose], function(err) {
+        const insertParams = [name, phoneNumber, facility, detail || '-', date, start_time, end_time, purpose];
+        console.log('예약 생성 쿼리 실행:', insertParams);
+        
+        db.run(insertQuery, insertParams, function(err) {
             if (err) {
+                console.error('예약 생성 중 DB 오류:', err.message);
                 res.status(500).json({ error: err.message });
                 return;
             }
             
+            console.log('예약 생성 성공, ID:', this.lastID);
             res.json({
                 id: this.lastID,
                 message: '예약이 성공적으로 생성되었습니다.',

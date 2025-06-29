@@ -1,6 +1,106 @@
 # 흥덕청소년 문화의집 시설 이용 예약 시스템
 
-흥덕청소년 문화의집의 시설 이용 예약을 위한 웹 기반 시스템입니다. 사용자가 다양한 시설을 예약하고 관리할 수 있는 직관적이고 현대적인 인터페이스를 제공합니다.
+## 개요
+흥덕청소년 문화의집의 시설 이용 예약을 관리하는 웹 애플리케이션입니다.
+
+## 기능
+- 시설 예약 생성 및 관리
+- 예약 현황 조회
+- 예약 취소 기능
+- 시설별 상세 정보 제공
+
+## 로컬 개발 환경 설정
+
+### 1. 의존성 설치
+```bash
+npm install
+```
+
+### 2. 데이터베이스 초기화
+```bash
+npm run init-db
+```
+
+### 3. 개발 서버 실행
+```bash
+npm run dev
+```
+
+서버는 `http://localhost:3000`에서 실행됩니다.
+
+## 배포 환경 설정
+
+### Vercel 배포
+1. Vercel CLI 설치
+```bash
+npm i -g vercel
+```
+
+2. 프로젝트 배포
+```bash
+vercel
+```
+
+3. 환경 변수 설정 (Vercel 대시보드에서)
+```
+NODE_ENV=production
+DATABASE_PATH=/tmp/reservations.db
+```
+
+### 배포 시 주의사항
+
+#### 1. 데이터베이스 파일 경로
+- Vercel과 같은 서버리스 환경에서는 `/tmp` 디렉토리를 사용해야 합니다.
+- 환경 변수 `DATABASE_PATH`를 `/tmp/reservations.db`로 설정하세요.
+
+#### 2. CORS 설정
+- `app.js`의 `allowedOrigins` 배열에 실제 배포 도메인을 추가하세요.
+- 예: `https://your-app.vercel.app`
+
+#### 3. 데이터베이스 지속성
+- 서버리스 환경에서는 데이터베이스 파일이 재시작 시 초기화될 수 있습니다.
+- 프로덕션 환경에서는 PostgreSQL, MongoDB 등의 클라우드 데이터베이스 사용을 권장합니다.
+
+## 문제 해결
+
+### 예약 생성이 안 되는 경우
+
+1. **브라우저 개발자 도구 확인**
+   - Network 탭에서 API 요청/응답 확인
+   - Console 탭에서 에러 메시지 확인
+
+2. **서버 로그 확인**
+   - Vercel 대시보드의 Functions 로그 확인
+   - 로컬에서는 터미널에서 로그 확인
+
+3. **일반적인 문제들**
+   - CORS 오류: `allowedOrigins`에 도메인 추가
+   - 데이터베이스 권한 오류: `DATABASE_PATH`를 `/tmp`로 설정
+   - 네트워크 오류: API 엔드포인트 URL 확인
+
+### 디버깅 방법
+
+1. **프론트엔드 디버깅**
+   - 브라우저 개발자 도구의 Console에서 로그 확인
+   - Network 탭에서 API 요청 상태 확인
+
+2. **백엔드 디버깅**
+   - 서버 로그에서 상세한 에러 정보 확인
+   - 데이터베이스 연결 상태 확인
+
+## API 엔드포인트
+
+- `GET /api/reservations` - 모든 예약 조회
+- `POST /api/reservations` - 새 예약 생성
+- `GET /api/reservations/date/:date` - 특정 날짜 예약 조회
+- `DELETE /api/reservations/:id` - 예약 삭제
+- `GET /api/reservations/facilities` - 시설 목록 조회
+
+## 기술 스택
+- Backend: Node.js, Express.js
+- Database: SQLite
+- Frontend: HTML, CSS, JavaScript
+- 배포: Vercel (권장)
 
 ## 🏗️ 프로젝트 구조
 
