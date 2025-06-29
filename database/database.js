@@ -1,14 +1,28 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
 // 데이터베이스 파일 경로 - 배포 환경 고려
 const dbPath = process.env.DATABASE_PATH || path.join(__dirname, 'reservations.db');
+
+// 데이터베이스 디렉토리 확인 및 생성
+const dbDir = path.dirname(dbPath);
+if (!fs.existsSync(dbDir)) {
+    try {
+        fs.mkdirSync(dbDir, { recursive: true });
+        console.log('데이터베이스 디렉토리가 생성되었습니다:', dbDir);
+    } catch (err) {
+        console.error('데이터베이스 디렉토리 생성 실패:', err.message);
+    }
+}
 
 // 데이터베이스 연결
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('데이터베이스 연결 오류:', err.message);
         console.error('데이터베이스 경로:', dbPath);
+        // 연결 실패 시에도 서버는 계속 실행
+        return;
     } else {
         console.log('SQLite 데이터베이스에 연결되었습니다.');
         console.log('데이터베이스 경로:', dbPath);
